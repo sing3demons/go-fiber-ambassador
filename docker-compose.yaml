@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  db:
+    image: mysql:5.7.22
+    restart: always
+    environment:
+      MYSQL_DATABASE: ambassador
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - .dbdata:/var/lib/mysql
+    ports:
+      - 3306:3306
+    
+  phpmyadmin:
+    image: phpmyadmin
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT_NUMBER=3306
+      - PHPMYADMIN_ALLOW_NO_PASSWORD=false
+    ports:
+      - 8081:80
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
