@@ -21,6 +21,7 @@ services:
       - DATABASE_HOST=db
       - DATABASE_PORT_NUMBER=3306
       - PHPMYADMIN_ALLOW_NO_PASSWORD=false
+    restart: always
     ports:
       - 8081:80
 

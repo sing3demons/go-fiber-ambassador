@@ -1,11 +1,10 @@
 package main
 
 import (
-	"sing3demons/ambassador/database"
-	"sing3demons/ambassador/routes"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/sing3demons/main/database"
+	"github.com/sing3demons/main/routes"
 )
 
 func main() {

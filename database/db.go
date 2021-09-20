@@ -1,8 +1,7 @@
 package database
 
 import (
-	"sing3demons/ambassador/models"
-
+	"github.com/sing3demons/main/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
