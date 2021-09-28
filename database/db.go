@@ -26,6 +26,6 @@ func GetDB() *gorm.DB {
 
 func autoMigrate() {
 	// db.Migrator().DropTable(models.User{})
-	db.AutoMigrate(&models.User{}, &models.Product{})
-	// db.AutoMigrate(models.Product{})
+	db.AutoMigrate(&models.User{}, &models.Product{}, &models.Link{})
+	db.AutoMigrate(&models.Order{}, &models.OrderItem{})
 }

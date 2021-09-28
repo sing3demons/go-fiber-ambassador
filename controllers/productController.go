@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
@@ -12,6 +13,15 @@ import (
 
 type Products struct{}
 
+type productsRespones struct {
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Image       string    `json:"image"`
+	Price       float64   `json:"price"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
 func (*Products) DB() *gorm.DB {
 	return database.GetDB()
 }
@@ -19,15 +29,18 @@ func (*Products) DB() *gorm.DB {
 func (tx *Products) FindProducts(c *fiber.Ctx) error {
 	var products []models.Product
 
-	if err := tx.DB().Find(&products).Error; err != nil {
+	if err := tx.DB().Limit(24).Find(&products).Error; err != nil {
 		c.Status(fiber.StatusUnprocessableEntity)
 		return c.JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
+	serializeProduct := []productsRespones{}
+	copier.Copy(&serializeProduct, &products)
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"products": products,
+		"products": serializeProduct,
 	})
 }
 func findByID(c *fiber.Ctx) (uint, error) {
@@ -62,8 +75,11 @@ func (tx *Products) FindProduct(c *fiber.Ctx) error {
 		})
 	}
 
+	serializeProduct := productsRespones{}
+	copier.Copy(&serializeProduct, &product)
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"products": product,
+		"products": serializeProduct,
 	})
 }
 

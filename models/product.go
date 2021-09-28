@@ -2,13 +2,6 @@ package models
 
 import "gorm.io/gorm"
 
-type productsRespones struct {
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Image       string  `json:"image"`
-	Price       float64 `json:"price"`
-}
-
 type Product struct {
 	gorm.Model
 	Title       string

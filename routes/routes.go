@@ -12,21 +12,33 @@ func Serve(app *fiber.App) {
 	adminGroup := v1.Group("admin/")
 	adminController := controllers.Auth{}
 	productController := controllers.Products{}
+	linkController := controllers.Link{}
+	orderController := controllers.Order{}
 	{
 		adminGroup.Post("register", adminController.Register)
 		adminGroup.Post("login", adminController.Login)
 		adminAuthenticated := adminGroup.Use(middlewares.IsAuthenticated)
-		adminAuthenticated.Get("user", adminController.User)
-		adminAuthenticated.Get("logout", adminController.Logout)
-		adminAuthenticated.Put("users/info", adminController.UpdateInfo)
-		adminAuthenticated.Patch("users/password", adminController.UpdatePassword)
-		adminAuthenticated.Get("ambassadors", adminController.Ambassadors)
-		adminAuthenticated.Get("ambassadors", adminController.Ambassadors)
-		adminAuthenticated.Get("products", productController.FindProducts)
-		adminAuthenticated.Get("products/:id", productController.FindProduct)
-		adminAuthenticated.Post("products", productController.CreateProducts)
-		adminAuthenticated.Put("products/:id", productController.UpdateProduct)
-		adminAuthenticated.Delete("products/:id", productController.DeleteProduct)
+		{
+			adminAuthenticated.Get("user", adminController.User)
+			adminAuthenticated.Get("logout", adminController.Logout)
+			adminAuthenticated.Put("users/info", adminController.UpdateInfo)
+			adminAuthenticated.Patch("users/password", adminController.UpdatePassword)
+			adminAuthenticated.Get("ambassadors", adminController.Ambassadors)
+			adminAuthenticated.Get("ambassadors", adminController.Ambassadors)
+		}
+		//-->products
+		{
+			adminAuthenticated.Get("products", productController.FindProducts)
+			adminAuthenticated.Get("products/:id", productController.FindProduct)
+			adminAuthenticated.Post("products", productController.CreateProducts)
+			adminAuthenticated.Put("products/:id", productController.UpdateProduct)
+			adminAuthenticated.Delete("products/:id", productController.DeleteProduct)
+		}
+		{
+			adminAuthenticated.Get("users/:id/link", linkController.FindLink)
+			adminAuthenticated.Get("orders", orderController.Orders)
+		}
+
 	}
 	ambassador := v1.Group("ambassador/")
 	{
