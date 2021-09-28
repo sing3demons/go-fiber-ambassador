@@ -23,13 +23,21 @@ func (*Auth) DB() *gorm.DB {
 	return database.GetDB()
 }
 
+type registerForm struct {
+	FirstName       string `json:"first_name"`
+	LastName        string `json:"last_name"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	PasswordConfirm string `json:"password_confirm"`
+}
+
 func (auth *Auth) Register(c *fiber.Ctx) error {
-	var data map[string]string
+	var data registerForm
 	if err := c.BodyParser(&data); err != nil {
 		return c.JSON(err)
 	}
 
-	if data["password"] != data["password_confirm"] {
+	if data.Password != data.PasswordConfirm {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"message": "passwords do not match",
@@ -37,13 +45,13 @@ func (auth *Auth) Register(c *fiber.Ctx) error {
 	}
 
 	user := models.User{
-		FirstName:    data["first_name"],
-		LastName:     data["last_name"],
-		Email:        data["email"],
+		FirstName:    data.FirstName,
+		LastName:     data.LastName,
+		Email:        data.Email,
 		IsAmbassador: false,
 	}
 
-	user.HashPassword(data["password"])
+	user.HashPassword(data.Password)
 
 	if err := auth.DB().Create(&user).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -56,8 +64,13 @@ func (auth *Auth) Register(c *fiber.Ctx) error {
 	})
 }
 
+type loginForm struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func (auth *Auth) Login(c *fiber.Ctx) error {
-	var data map[string]string
+	var data loginForm
 
 	if err := c.BodyParser(&data); err != nil {
 		return c.JSON(err)
@@ -65,7 +78,7 @@ func (auth *Auth) Login(c *fiber.Ctx) error {
 
 	var user models.User
 
-	if err := auth.DB().Where("email = ?", data["email"]).First(&user).Error; err != nil {
+	if err := auth.DB().Where("email = ?", data.Email).First(&user).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -78,7 +91,7 @@ func (auth *Auth) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := user.ComparePassword(data["password"]); err != nil {
+	if err := user.ComparePassword(data.Password); err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{
 			"message": err.Error(),
@@ -117,7 +130,11 @@ func (auth *Auth) User(c *fiber.Ctx) error {
 	}
 	var user models.User
 
-	auth.DB().First(&user, id)
+	if err := auth.DB().First(&user, id).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	serializeUser := userResponse{}
 	copier.Copy(&serializeUser, &user)
@@ -133,6 +150,58 @@ func (auth *Auth) Logout(c *fiber.Ctx) error {
 	}
 	c.Cookie(&cookie)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "success",
+		"message": "logout success",
 	})
+}
+
+func (auth *Auth) UpdateInfo(c *fiber.Ctx) error {
+	var form updateprofile
+
+	if err := c.BodyParser(&form); err != nil {
+		return err
+	}
+
+	id, _ := middlewares.GetUserID(c)
+	var user models.User
+	copier.Copy(&user, &form)
+	user.ID = id
+
+	if err := auth.DB().Model(&user).Updates(&user).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	serializeUser := userResponse{}
+	copier.Copy(&serializeUser, &user)
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"user": serializeUser,
+	})
+}
+
+func (auth *Auth) UpdatePassword(c *fiber.Ctx) error {
+	var form updatePassword
+	if err := c.BodyParser(&form); err != nil {
+		return err
+	}
+	id, _ := middlewares.GetUserID(c)
+	var user models.User
+	user.ID = id
+
+	if form.Password != form.PasswordConfirm {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "passwords do not match",
+		})
+	}
+
+	user.HashPassword(form.Password)
+
+	if err := auth.DB().Model(&user).Update("password", user.Password).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
 }

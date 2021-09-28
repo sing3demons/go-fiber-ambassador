@@ -2,7 +2,7 @@ package models
 
 import "gorm.io/gorm"
 
-type _Product struct {
+type productsRespones struct {
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	Image       string  `json:"image"`
