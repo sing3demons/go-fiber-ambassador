@@ -20,12 +20,7 @@ func main() {
 		}
 		ambassador.HashPassword("1234")
 
-		// users[i] = ambassador
+	
 		db.Create(&ambassador)
 	}
-
-	// fmt.Println("user: ", users)
-
-	// db.CreateInBatches(users, 10)
-
 }
