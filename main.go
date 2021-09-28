@@ -16,8 +16,9 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	app.Get("/healcheck", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "ok"})
+	app.Get("/", func(c *fiber.Ctx) error {
+		resp := fiber.Map{"status": "ok"}
+		return c.Status(fiber.StatusOK).JSON(resp)
 	})
 
 	routes.Serve(app)

@@ -2,16 +2,15 @@ package models
 
 import "gorm.io/gorm"
 
-type Product struct {
-	gorm.Model
+type _Product struct {
 	Title       string  `json:"title"`
 	Description string  `json:"description"`
 	Image       string  `json:"image"`
 	Price       float64 `json:"price"`
 }
 
-type _Product struct {
-	ID          uint
+type Product struct {
+	gorm.Model
 	Title       string
 	Description string
 	Image       string

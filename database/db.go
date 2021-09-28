@@ -10,19 +10,22 @@ var db *gorm.DB
 
 func Connect() {
 	var err error
+	dsn := "root:root@tcp(localhost:3306)/ambassador?charset=utf8&parseTime=True&loc=Local"
 
-	db, err = gorm.Open(mysql.Open("root:root@tcp(localhost:3306)/ambassador"), &gorm.Config{})
+	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		panic("Could not connect with the database!")
 	}
-	db.AutoMigrate(models.Product{})
+	autoMigrate()
 }
 
 func GetDB() *gorm.DB {
 	return db
 }
 
-func AutoMigrate() {
-	db.AutoMigrate(models.Product{})
+func autoMigrate() {
+	// db.Migrator().DropTable(models.User{})
+	db.AutoMigrate(&models.User{})
+	// db.AutoMigrate(models.Product{})
 }
