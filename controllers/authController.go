@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -14,9 +15,10 @@ import (
 type Auth struct{}
 
 type userResponse struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
+	FirstName    string `json:"first_name"`
+	LastName     string `json:"last_name"`
+	Email        string `json:"email"`
+	IsAmbassador bool   `json:"is_ambassador"`
 }
 
 func (*Auth) DB() *gorm.DB {
@@ -48,7 +50,7 @@ func (auth *Auth) Register(c *fiber.Ctx) error {
 		FirstName:    data.FirstName,
 		LastName:     data.LastName,
 		Email:        data.Email,
-		IsAmbassador: false,
+		IsAmbassador: strings.Contains(c.Path(), "/api/v1/ambassadors"),
 	}
 
 	user.HashPassword(data.Password)

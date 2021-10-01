@@ -40,10 +40,20 @@ func Serve(app *fiber.App) {
 		}
 
 	}
-	ambassador := v1.Group("ambassador/")
+	ambassador := v1.Group("ambassadors")
 	{
-		ambassador.Get("products", func(c *fiber.Ctx) error {
-			return c.JSON("products")
-		})
+		ambassador.Post("register", adminController.Register)
+		ambassador.Post("login", adminController.Login)
+	}
+	ambassadorAuthenticated := ambassador.Use(middlewares.IsAuthenticated)
+	ambassadorController := controllers.Auth{}
+	{
+		ambassadorAuthenticated.Get("user", ambassadorController.User)
+		ambassadorAuthenticated.Post("logout", ambassadorController.Logout)
+		ambassadorAuthenticated.Put("users/info", ambassadorController.UpdateInfo)
+		ambassadorAuthenticated.Put("users/password", ambassadorController.UpdatePassword)
+		// ambassadorAuthenticated.Post("links", ambassadorController.CreateLink)
+		// ambassadorAuthenticated.Get("stats", ambassadorController.Stats)
+		// ambassadorAuthenticated.Get("rankings", ambassadorController.Rankings)
 	}
 }

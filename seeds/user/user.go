@@ -20,7 +20,6 @@ func main() {
 		}
 		ambassador.HashPassword("1234")
 
-	
 		db.Create(&ambassador)
 	}
 }
