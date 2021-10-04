@@ -14,23 +14,8 @@ import (
 
 type Auth struct{}
 
-type userResponse struct {
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	Email        string `json:"email"`
-	IsAmbassador bool   `json:"is_ambassador"`
-}
-
 func (*Auth) DB() *gorm.DB {
 	return database.GetDB()
-}
-
-type registerForm struct {
-	FirstName       string `json:"first_name"`
-	LastName        string `json:"last_name"`
-	Email           string `json:"email"`
-	Password        string `json:"password"`
-	PasswordConfirm string `json:"password_confirm"`
 }
 
 func (auth *Auth) Register(c *fiber.Ctx) error {
@@ -66,11 +51,6 @@ func (auth *Auth) Register(c *fiber.Ctx) error {
 	})
 }
 
-type loginForm struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 func (auth *Auth) Login(c *fiber.Ctx) error {
 	var data loginForm
 
@@ -100,7 +80,24 @@ func (auth *Auth) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	token, err := middlewares.GenerateJWT(user.ID)
+	isAmbassador := strings.Contains(c.Path(), "/api/v1/ambassadors")
+
+	var scope string
+
+	if isAmbassador {
+		scope = "ambassador"
+	} else {
+		scope = "admin"
+	}
+
+	if !isAmbassador && user.IsAmbassador {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthorized",
+		})
+	}
+
+	token, err := middlewares.GenerateJWT(user.ID, scope)
 	if err != nil {
 		c.Status(fiber.StatusBadRequest)
 		return c.JSON(fiber.Map{

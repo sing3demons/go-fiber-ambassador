@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -10,6 +11,7 @@ import (
 
 type ClaimsMap struct {
 	jwt.StandardClaims
+	Scope string
 }
 
 const SecretKey = "5144F11C-4A9E-4801-B005-66F1FB8CE027"
@@ -26,13 +28,23 @@ func IsAuthenticated(c *fiber.Ctx) error {
 		})
 	}
 
+	payload := token.Claims.(*ClaimsMap)
+	isAmbassador := strings.Contains(c.Path(), "/api/v1/ambassadors")
+	if (payload.Scope == "admin" && isAmbassador) || (payload.Scope == "ambassador" && !isAmbassador) {
+		c.Status(fiber.StatusUnauthorized)
+		return c.JSON(fiber.Map{
+			"message": "unauthorized",
+		})
+	}
+
 	return c.Next()
 }
 
-func GenerateJWT(id uint) (string, error) {
+func GenerateJWT(id uint, scope string) (string, error) {
 	payload := ClaimsMap{}
 	payload.Subject = strconv.Itoa(int(id))
 	payload.ExpiresAt = time.Now().Add(time.Hour * 1).Unix()
+	payload.Scope = scope
 
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, payload).SignedString([]byte(SecretKey))
 
