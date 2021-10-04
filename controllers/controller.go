@@ -25,8 +25,9 @@ type registerForm struct {
 }
 
 type userResponse struct {
-	FirstName    string `json:"first_name"`
-	LastName     string `json:"last_name"`
-	Email        string `json:"email"`
-	IsAmbassador bool   `json:"is_ambassador"`
+	FirstName    string   `json:"first_name"`
+	LastName     string   `json:"last_name"`
+	Email        string   `json:"email"`
+	IsAmbassador bool     `json:"is_ambassador"`
+	Revenue      *float64 `json:"revenue,omitempty"`
 }

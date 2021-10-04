@@ -135,6 +135,15 @@ func (auth *Auth) User(c *fiber.Ctx) error {
 		})
 	}
 
+	if strings.Contains(c.Path(), "/api/v1/ambassadors") {
+		ambassador := models.Ambassador(user)
+		ambassador.CalculateRevenue(auth.DB())
+
+		serializeUser := userResponse{}
+		copier.Copy(&serializeUser, &ambassador)
+		return c.JSON(serializeUser)
+	}
+
 	serializeUser := userResponse{}
 	copier.Copy(&serializeUser, &user)
 	return c.JSON(serializeUser)
