@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"context"
+	"encoding/json"
 	"strconv"
 	"time"
 
+	redis "github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jinzhu/copier"
 	"github.com/sing3demons/main/database"
@@ -24,6 +27,10 @@ type productsRespones struct {
 
 func (*Products) DB() *gorm.DB {
 	return database.GetDB()
+}
+
+func (*Products) Chcher() *redis.Client {
+	return database.Cache
 }
 
 func (tx *Products) FindProducts(c *fiber.Ctx) error {
@@ -152,4 +159,34 @@ func (tx *Products) DeleteProduct(c *fiber.Ctx) error {
 	}
 
 	return c.SendStatus(fiber.StatusNoContent)
+}
+
+func (tx *Products) ProductsFrontend(c *fiber.Ctx) error {
+	var products []models.Product
+
+	ctx := context.Background()
+	key := "products::fontend"
+
+	result, err := tx.Chcher().Get(ctx, key).Result()
+	if err != nil {
+		tx.DB().Limit(10000).Find(&products)
+
+		bytes, err := json.Marshal(products)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if errKey := tx.Chcher().Set(ctx, key, bytes, 10*time.Second).Err(); errKey != nil {
+			panic(errKey)
+		}
+
+	} else {
+		json.Unmarshal([]byte(result), &products)
+
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"products": products,
+	})
 }
