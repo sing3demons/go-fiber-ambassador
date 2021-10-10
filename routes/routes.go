@@ -45,6 +45,7 @@ func Serve(app *fiber.App) {
 		ambassador.Post("register", adminController.Register)
 		ambassador.Post("login", adminController.Login)
 		ambassador.Get("products/frontend", productController.ProductsFrontend)
+		ambassador.Get("products/backend", productController.ProductsBackend)
 	}
 	ambassadorAuthenticated := ambassador.Use(middlewares.IsAuthenticated)
 	ambassadorController := controllers.Auth{}
