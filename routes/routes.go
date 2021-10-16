@@ -49,13 +49,14 @@ func Serve(app *fiber.App) {
 	}
 	ambassadorAuthenticated := ambassador.Use(middlewares.IsAuthenticated)
 	ambassadorController := controllers.Auth{}
+
 	{
 		ambassadorAuthenticated.Get("user", ambassadorController.User)
 		ambassadorAuthenticated.Post("logout", ambassadorController.Logout)
 		ambassadorAuthenticated.Put("users/info", ambassadorController.UpdateInfo)
 		ambassadorAuthenticated.Put("users/password", ambassadorController.UpdatePassword)
-		// ambassadorAuthenticated.Post("links", ambassadorController.CreateLink)
-		// ambassadorAuthenticated.Get("stats", ambassadorController.Stats)
-		// ambassadorAuthenticated.Get("rankings", ambassadorController.Rankings)
+		ambassadorAuthenticated.Post("links", linkController.CreateLink)
+		ambassadorAuthenticated.Get("stats", linkController.Stats)
+		ambassadorAuthenticated.Get("rankings", ambassadorController.Rankings)
 	}
 }

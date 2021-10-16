@@ -138,19 +138,14 @@ func (tx *Products) UpdateProduct(c *fiber.Ctx) error {
 	copier.Copy(&product, &form)
 	tx.DB().Model(&product).Updates(&product)
 
-	go tx.deleteCache("products::fontend")
-	go tx.deleteCache("products::backend")
+	go database.ClearCache("products::fontend", "products::backend")
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"products": product,
 	})
 }
 
-func (tx *Products) deleteCache(key string) {
-	time.Sleep(5 * time.Second)
-	tx.Chcher().Del(context.Background(), key)
 
-}
 
 func (tx *Products) DeleteProduct(c *fiber.Ctx) error {
 
